@@ -21,8 +21,16 @@
     "clean": "ets clean"
   },
   "dependencies": {
+    "@types/koa-compress": "^2.0.8",
+    "@types/sequelize": "^4.27.17",
     "egg": "^2.6.1",
-    "egg-scripts": "^2.6.0"
+    "egg-cors": "^2.0.0",
+    "egg-mysql": "^3.0.0",
+    "egg-router-plus": "^1.2.0",
+    "egg-scripts": "^2.6.0",
+    "egg-sequelize": "^3.1.4",
+    "koa-compress": "^3.0.0",
+    "mysql2": "^1.5.3"
   },
   "devDependencies": {
     "@types/mocha": "^2.2.40",
