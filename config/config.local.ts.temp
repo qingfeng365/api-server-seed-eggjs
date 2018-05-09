@@ -1,0 +1,52 @@
+import { DefaultConfig } from './config.default';
+
+export default () => {
+  const config: DefaultConfig = {};
+  config.logger = {
+    level: 'DEBUG',
+    consoleLevel: 'DEBUG',
+  };
+
+
+  config.mysql = {
+    // database configuration
+    client: {
+      // host
+      host: 'autocrm-cent.oicp.net',
+      // port
+      port: '3306',
+      // username
+      user: 'root',
+      // password
+      password: '',
+      // database
+      database: 'apiserver_seed_dev',
+    },
+    // load into app, default is open
+    app: true,
+    // load into agent, default is close
+    agent: false,
+  };
+
+  config.sequelize = {
+    dialect: 'mysql', // support: mysql, mariadb, postgres, mssql
+    database: 'apiserver_seed_dev',
+    host: 'autocrm-cent.oicp.net',
+    port: '3306',
+    username: 'root',
+    password: '',
+    freezeTableName: true,
+    operatorsAliases: false,
+  };
+  
+  config.redis = {
+    client: {
+      host: '127.0.0.1',
+      port: '6379',
+      password: '',
+      db: '0',
+    },
+    agent: true,
+  };
+  return config;
+};

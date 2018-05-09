@@ -8,6 +8,7 @@ import { SyncJob, JobType, CreateTableOption, FieldDefine, FieldType, AddFieldOp
  */
 class DbStructSync {
 
+
   syncJobs: SyncJob[];
   dbName: string;
   db: any;
@@ -62,16 +63,16 @@ class DbStructSync {
     this.addJob(job);
   }
   /**
-   * 调整字段大小, 只能对 CHAR VARCHAR DECIMAL 字段调整 ; 
-   * 可执行条件: 当前字段存在, 类型相同, 大小不等 ;
+   * 调整字段大小(增大), 只能对 CHAR VARCHAR DECIMAL 字段调整 ;
+   * 可执行条件: 当前字段存在, 类型相同, CHAR VARCHAR: 当前小于设置,  DECIMAL:精度或小数不等 ;
    * 跳过条件: 不符合 可执行条件 时 跳过 ;
-   * 报错条件: 
-   * 1) 对非 CHAR VARCHAR DECIMAL 字段调整 ; 
+   * 报错条件:
+   * 1) 对非 CHAR VARCHAR DECIMAL 字段调整 ;
    * 
-   * @param {string} tableName 
-   * @param {string} fieldName 
-   * @param {FieldType} fieldtype 
-   * @param {FieldDefine} newFieldDef 
+   * @param {string} tableName
+   * @param {string} fieldName
+   * @param {FieldType} fieldtype
+   * @param {FieldDefine} newFieldDef
    * @memberof DbStructSync
    */
   public addJobByAdjustFieldSize(tableName: string, fieldName: string,
@@ -129,6 +130,9 @@ class DbStructSync {
         case JobType.addField:
           result = await this.execAddField(job.jobOption as AddFieldOption);
           break;
+        case JobType.adjustFieldSize:
+          result = await this.execAdjustFieldSize(job.jobOption as AdjustFieldSizeOption);
+          break;
         default:
 
       }
@@ -142,11 +146,22 @@ class DbStructSync {
         result = !(await this.isTableExist(job.jobOption.tableName));
         break;
       case JobType.addField:
-        const op = job.jobOption as AddFieldOption;
-        result = !(await this.isTableFieldExistForName(
-          op.tableName,
-          op.field.name));
+        {
+          const op = job.jobOption as AddFieldOption;
+          result = !(await this.isTableFieldExistForName(
+            op.tableName,
+            op.field.name));
+        }
         break;
+      case JobType.adjustFieldSize:
+        {
+          const op = job.jobOption as AdjustFieldSizeOption;
+          // 如果字段存在,且类型相同,且大小小于设置,才需要执行,否则跳过
+          result = (await this.isTableFieldExistForNameTypeLessSize(
+            op.tableName, op.fieldtype, op.newFieldDef));
+        }
+        break;
+
       default:
 
     }
@@ -169,11 +184,58 @@ class DbStructSync {
     return result.isExist;
   }
 
-  private async isTableFieldExistForNameTypeSize(tableName: string, field: FieldDefine): Promise<boolean> {
+  private async isTableFieldExistForNameTypeLessSize(
+    tableName: string, fieldType: FieldType,
+    fieldDef: FieldDefine): Promise<boolean> {
     const querySQL = this.getQueryTableFieldSchemaSQL(tableName, field.name);
 
-    const result = await this.db.queryOne(querySQL);
-    this.logger.debug('\nquery SQL:\n', querySQL, '\nquery result:\n', result);
+    const query = await this.db.queryOne(querySQL);
+    /*
+ {
+  TABLE_CATALOG: 'def',
+  TABLE_SCHEMA: 'apiserver_seed_dev',
+  TABLE_NAME: 'sync_demo_table1',
+  COLUMN_NAME: 'addFieldVarchar',
+  ORDINAL_POSITION: 14,
+  COLUMN_DEFAULT: '',
+  IS_NULLABLE: 'NO',
+  DATA_TYPE: 'varchar',
+  CHARACTER_MAXIMUM_LENGTH: 100,
+  CHARACTER_OCTET_LENGTH: 400,
+  NUMERIC_PRECISION: null,
+  NUMERIC_SCALE: null,
+  DATETIME_PRECISION: null,
+  CHARACTER_SET_NAME: 'utf8mb4',
+  COLLATION_NAME: 'utf8mb4_general_ci',
+  COLUMN_TYPE: 'varchar(100)',
+  COLUMN_KEY: '',
+  EXTRA: '',
+  PRIVILEGES: 'select,insert,update,references',
+  COLUMN_COMMENT: '',
+  GENERATION_EXPRESSION: '' }
+    */
+
+    this.logger.debug('\nquery SQL:\n', querySQL, '\nquery result:\n', query);
+
+    let result = false;
+    if (query) {
+      const dataType = (query.DATA_TYPE as string).toUpperCase();
+      const defType: string = (FieldType[fieldType]).toUpperCase();
+      this.logger.debug('dataType:', dataType, ' defType:', defType);
+      if (dataType === defType) {
+
+        if (dataType === 'CHAR' || dataType === 'VARCHAR') {
+          const dataLength: number = query.CHARACTER_MAXIMUM_LENGTH || 0;
+          const defLength: number = fieldDef.length || 0;
+          this.logger.debug('dataLength:', dataLength, ' defLength:', defLength);
+          result = (defLength > dataLength);
+        } else if (dataType === 'DECIMAL') {
+
+        }
+      } else {
+        result = false;
+      }
+    }
     return result;
   }
   private async execCreateTable(op: CreateTableOption): Promise<boolean> {
@@ -217,6 +279,10 @@ class DbStructSync {
     const result = await this.db.query(execSQL);
     this.logger.debug('\nexec result:\n', result);
     this.logger.info('表字段:', op.tableName, ' : ', op.field.name, ' 创建结束.');
+    return true;
+  }
+
+  private async execAdjustFieldSize(op: AdjustFieldSizeOption): Promise<boolean> {
     return true;
   }
   private getCheckTableExistSQL(tableName: string): string {

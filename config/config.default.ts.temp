@@ -1,0 +1,67 @@
+import { EggAppConfig, PowerPartial } from 'egg';
+
+// for config.{env}.ts
+export type DefaultConfig = PowerPartial<EggAppConfig & BizConfig>;
+
+// app special config scheme
+export interface BizConfig {
+  sourceUrl: string;
+}
+
+export default (appInfo: EggAppConfig) => {
+  const config = {} as PowerPartial<EggAppConfig> & BizConfig;
+
+  // app special config
+  config.sourceUrl = `https://github.com/eggjs/examples/tree/master/${appInfo.name}`;
+
+  // override config from framework / plugin
+  // use for cookie sign key, should change to your own and keep security
+  config.keys = appInfo.name + '_1525480346495_9586';
+
+  config.security = {
+    csrf: {
+      enable: false,
+      ignoreJSON: true, // 默认为 false，当设置为 true 时，将会放过所有 content-type 为 `application/json` 的请求
+    },
+  };
+
+  config.onerror = {
+    accepts: (ctx) => {
+      console.log('content-type:', ctx.get('content-type'));
+
+      if (ctx.get('content-type') === 'application/json') {
+        return 'json';
+      }
+
+      return 'html';
+    },
+  };
+
+  // add your config here
+  config.middleware = ['compress'];
+
+  config.compress = {
+    threshold: 2048,
+  };
+
+  config.bodyParse = {
+    formLimit: '1mb',
+  };
+
+  config.redis = {
+    client: {
+      host: '127.0.0.1',
+      port: '6379',
+      password: '',
+      db: '0',
+    },
+    agent: true,
+  };
+  // 插件的配置
+  config.cors = {
+    origin: '*',
+    allowMethods: 'GET,HEAD,PUT,POST,DELETE,PATCH',
+  };
+
+  return config;
+};
