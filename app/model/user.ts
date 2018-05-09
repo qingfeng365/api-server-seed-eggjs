@@ -1,5 +1,5 @@
 import { Application } from 'egg';
-import { DataTypes } from 'sequelize';
+import { DataTypes} from 'sequelize';
 
 export default (app: Application) => {
 

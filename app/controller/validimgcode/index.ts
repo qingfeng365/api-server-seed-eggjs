@@ -6,34 +6,49 @@ export default class IndexController extends Controller {
     ((this.app as any).redisCatchTool as RedisCatchTool).createGroup('ValidImgCode');
   public async getValidImg() {
     const { ctx } = this;
+    console.log('validator:', (this.app as any).validator);
+    const paramRule = {
+      id: 'string',
+    };
+    // this.ctx.validate(paramRule);
+    const errors =  (this.app as any).validator.validate(paramRule, ctx.query);
+
+    console.log('errors:', errors);
+
+
     const cacheId = ctx.query.id;
-    if (cacheId) {
-      let validValue = parseInt(Math.random() * 9000 + 1000 + '', 10);
 
-      await this.catchGroup.set(cacheId, validValue, 1000 * 60 * 30);
+    const validValue = parseInt(Math.random() * 9000 + 1000 + '', 10);
 
-      // validValue = await this.catchGroup.get(cacheId);
+    await this.catchGroup.set(cacheId, validValue, 1000 * 60 * 30);
 
-      ctx.logger.info(`getValidImg validValue: ${cacheId}:${validValue}`);
 
-      const p = new captchapng(80, 30, validValue);
-      // width,height,numeric
-      p.color(60, 179, 215, 100); // First color: background (red, green, blue, alpha)
-      p.color(80, 80, 80, 255); // Second color: paint (red, green, blue, alpha)
-      const img = p.getBase64();
-      const imgbase64 = new Buffer(img, 'base64');
+    ctx.logger.info(`getValidImg validValue: ${cacheId}:${validValue}`);
 
-      ctx.set('Content-Type', 'image/png');
+    const p = new captchapng(80, 30, validValue);
+    // width,height,numeric
+    p.color(60, 179, 215, 100); // First color: background (red, green, blue, alpha)
+    p.color(80, 80, 80, 255); // Second color: paint (red, green, blue, alpha)
+    const img = p.getBase64();
+    const imgbase64 = new Buffer(img, 'base64');
 
-      ctx.body = imgbase64;
-    } else {
-      ctx.body = '';
-    }
+    ctx.set('Content-Type', 'image/png');
+
+    ctx.body = imgbase64;
+
   }
   public async checkValidImgCode() {
     const { ctx } = this;
+
+    const paramRule = {
+      id: 'string',
+      code: 'string',
+    };
+    ctx.validate(paramRule);
+
     const cacheId = ctx.request.body.id;
     const code = ctx.request.body.code;
+
 
     ctx.logger.info(`checkValidImgCode cacheId: ${cacheId}, code:${code}`);
 
@@ -47,13 +62,13 @@ export default class IndexController extends Controller {
       } else {
         ctx.status = 400;
         ctx.body = {
-          error: 'invalid code!'
+          error: 'invalid code!',
         };
       }
     } else {
       ctx.status = 400;
       ctx.body = {
-        error: 'invalid code!'
+        error: 'invalid code!',
       };
     }
   }
