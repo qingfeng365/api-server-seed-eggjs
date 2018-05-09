@@ -1,5 +1,6 @@
 import { CreateTableOption, FieldType } from '../db_struct_model';
 
+// tslint:disable-next-line:variable-name
 const sync_demo_table1: CreateTableOption = {
   tableName: 'sync_demo_table1',
   fields: [

@@ -2,7 +2,8 @@
 export interface SyncJob {
   jobType: JobType;
   // jobOption: JobOption;
-  jobOption: CreateTableOption | AddFieldOption | AdjustFieldSizeOption;
+  jobOption: CreateTableOption | AddFieldOption | AdjustFieldSizeOption | 
+  AdjustFieldTypeOption | ChangeFieldNameOption;
 
 };
 
@@ -20,6 +21,7 @@ export interface JobOption {
 
 export interface CreateTableOption extends JobOption {
   fields: FieldDefine[];
+  tableComment?: string;
 }
 export interface AddFieldOption extends JobOption {
   field: FieldDefine;
@@ -29,8 +31,16 @@ export interface AdjustFieldSizeOption extends JobOption {
   fieldtype: FieldType;
   newFieldDef: FieldDefine;
 }
+export interface AdjustFieldTypeOption extends JobOption {
+  fieldName: string;
+  oldFieldtype: FieldType;
+  newFieldDef: FieldDefine;
+}
+export interface ChangeFieldNameOption extends JobOption {
+  oldFieldName: string;
+  newFieldName: string;
 
-
+}
 /**
  * 字段属性定义
  * 
@@ -48,14 +58,14 @@ export interface FieldDefine {
   type?: FieldType;
   /**
    * 字符字段大小, 默认 255 ; 
-   * FLOAT/DECIMAL 字段精度,默认 15
+   * DECIMAL 字段精度,默认 15
    * 
    * @type {number}
    * @memberof FieldDefine
    */
   length?: number;
   /**
-   * FLOAT/DECIMAL 字段小数位数,默认 2
+   * DECIMAL 字段小数位数,默认 2
    * 
    * @type {number}
    * @memberof FieldDefine
@@ -86,6 +96,10 @@ export interface FieldDefine {
    * @memberof FieldDefine
    */
   notAutoDefDefaultValue?: boolean;
+  /**
+   * 不要自动包括 NULL 或 NOT NULL , 用于调整字段时,不要更改原来的 NULL 设置
+   */
+  notAutoIncludeNullDef?: boolean;
 }
 
 

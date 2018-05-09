@@ -3,6 +3,7 @@ import { CreateTableOption, FieldType } from '../db_struct_model';
 // tslint:disable-next-line:variable-name
 const sync_demo_table2: CreateTableOption = {
   tableName: 'sync_demo_table2',
+  tableComment: '测试表2',
   fields: [
     {
       name: 'CHAR',

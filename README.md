@@ -44,7 +44,18 @@ npm install --registry=https://registry.npm.taobao.org --disturl=https://npm.tao
 
 ```
 
+### 自动生成模型
 
+要全局安装 sequelize-auto mysql
+
+```
+sequelize-auto -o "./automodels" -d <数据库名> -h <主机域名> -u <用户名> -p 3306 -x <密码> -e mysql -C 
+```
+
+```
+sequelize-auto -o "./automodels" -d apiserver_seed_dev -h autocrm-cent.oicp.net -u root -p 3306 -x <密码> -e mysql -C 
+
+```
 
 # egg-init 创建项目时的说明
 
