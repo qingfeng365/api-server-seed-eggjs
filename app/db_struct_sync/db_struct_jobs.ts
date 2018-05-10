@@ -1,7 +1,7 @@
+import { FieldType } from './db_struct_model';
 import { dbStructSync } from './db_struct_sync';
 import { sync_demo_table1 } from './tables/sync_demo_table1';
 import { sync_demo_table2 } from './tables/sync_demo_table2';
-import { FieldType } from './db_struct_model';
 export function buildSyncJobs() {
 
   // 增加表 sync_demo_table1
