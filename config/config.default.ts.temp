@@ -27,8 +27,6 @@ export default (appInfo: EggAppConfig) => {
 
   config.onerror = {
     accepts: (ctx) => {
-      console.log('content-type:', ctx.get('content-type'));
-
       if (ctx.get('content-type') === 'application/json') {
         return 'json';
       }

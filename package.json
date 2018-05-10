@@ -33,6 +33,7 @@
     "egg-session-redis": "^1.0.0",
     "egg-validate": "^1.0.0",
     "koa-compress": "^3.0.0",
+    "moment": "^2.22.1",
     "mysql2": "^1.5.3",
     "sequelize": "^4.37.7",
     "sequelize-decorators": "^1.0.2",
