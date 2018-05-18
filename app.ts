@@ -1,19 +1,35 @@
 import { Application } from 'egg';
 
+import { Sequelize } from 'sequelize';
 import { dbStructSync } from './app/db_struct_sync/db_struct_sync';
 
 export default (app: Application) => {
   // 注意：在 beforeStart 中不建议做太耗时的操作，框架会有启动的超时检测。
   app.beforeStart(async () => {
-    app.logger.info('app.beforeStart...');
     const { mysql } = app as any;
+
+    const sequelize: Sequelize = (app as any).model;
+
     if (mysql) {
-      if (app.config.mysql && app.config.mysql.client && app.config.mysql.client.database ) {
+      if (app.config.mysql && app.config.mysql.client && app.config.mysql.client.database) {
         const dbName = app.config.mysql.client.database;
 
-        dbStructSync.syncDb(dbName, mysql, app.logger);
+        await dbStructSync.syncDb(dbName, mysql, app.logger);
       }
     }
+
+    if (sequelize) {
+
+      Object.keys(sequelize.models).forEach((modelName) => {
+        if ('associate' in sequelize.models[modelName]) {
+          app.logger.debug('执行 model: ', modelName, ' 的 associate()...');
+          sequelize.models[modelName].associate(sequelize.models);
+        }
+      });
+
+    }
+
+
 
     // 应用会等待这个函数执行完成才启动
     // await ...
