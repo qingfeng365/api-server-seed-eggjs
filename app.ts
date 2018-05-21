@@ -18,16 +18,17 @@ export default (app: Application) => {
       }
     }
 
-    if (sequelize) {
+    // 取消 ,因 egg-sequelize 会自动调用 associate 
+    // if (sequelize) {
 
-      Object.keys(sequelize.models).forEach((modelName) => {
-        if ('associate' in sequelize.models[modelName]) {
-          app.logger.debug('执行 model: ', modelName, ' 的 associate()...');
-          sequelize.models[modelName].associate(sequelize.models);
-        }
-      });
+    //   Object.keys(sequelize.models).forEach((modelName) => {
+    //     if ('associate' in sequelize.models[modelName]) {
+    //       app.logger.debug('执行 model: ', modelName, ' 的 associate()...');
+    //       sequelize.models[modelName].associate(sequelize.models);
+    //     }
+    //   });
 
-    }
+    // }
 
 
 

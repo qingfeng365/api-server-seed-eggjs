@@ -83,8 +83,16 @@ export default (app: Application) => {
       return this.count();
     }
   };
-  User.associate = function associate(models) {
-    app.logger.debug('User.associate...');
+
+  // 原来的定义方式要改变
+  // User.associate = function associate(models) {
+  //   app.logger.debug('User.associate...');
+  // };
+
+  User.associate = function associate() {
+    const models = app.model.models;
+    app.logger.debug('User.associate...', models);
   };
+
   return User;
 };
