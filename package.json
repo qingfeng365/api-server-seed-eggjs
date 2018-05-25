@@ -21,7 +21,6 @@
     "clean": "ets clean"
   },
   "dependencies": {
-    "@types/bcryptjs": "^2.4.1",
     "await-stream-ready": "^1.0.1",
     "bcryptjs": "^2.4.3",
     "captchapng": "0.0.1",
@@ -44,6 +43,7 @@
     "uuid": "^3.2.1"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.1",
     "@types/koa-compress": "^2.0.8",
     "@types/sequelize": "^4.27.17",
     "@types/stream-to-array": "^2.3.0",
