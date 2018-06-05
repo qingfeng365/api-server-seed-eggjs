@@ -21,3 +21,4 @@ config/**/*.map
 typings/app
 typings/config
 resource
+yarn-error.log

@@ -25,7 +25,7 @@
     "await-stream-ready": "^1.0.1",
     "bcryptjs": "^2.4.3",
     "captchapng": "0.0.1",
-    "egg": "^2.6.1",
+    "egg": "^2.8.1",
     "egg-cors": "^2.0.0",
     "egg-mysql": "^3.0.0",
     "egg-redis": "^2.0.0",
