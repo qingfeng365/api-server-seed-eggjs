@@ -4,8 +4,8 @@ import {
   AdjustFieldSizeOption,
   AdjustFieldTypeOption,
   ChangeFieldNameOption,
-  CreateTableOption, FieldDefine,
-  FieldType, JobType, SyncJob,
+  CreateIndexOption, CreateTableOption,
+  FieldDefine, FieldType, IndexFieldDefine, JobType, SyncJob,
 } from './db_struct_model';
 
 /**
@@ -63,6 +63,23 @@ class DbStructSync {
     this.addJob(job);
   }
 
+  public addJobByCreateIndex(
+    tableName: string,
+    indexName: string,
+    indexFields: IndexFieldDefine[],
+    isUnique: boolean = false): void {
+    const job: SyncJob = {
+      jobType: JobType.createIndex,
+      jobOption: {
+        tableName,
+        indexName,
+        fields: indexFields,
+        isUnique,
+      } as CreateIndexOption,
+    };
+    this.addJob(job);
+  }
+
   /**
    * 增加字段 ;
    * 跳过条件: 字段已存在
@@ -109,7 +126,7 @@ class DbStructSync {
   }
   /**
    * 更改字段名称, 注意不推荐 对 通过 addJobByAddField 增加的字段改名 ;
-   * 由于算法的原因, 这种情况会有副作用, 通过 addJobByAddField 增加的旧字段 
+   * 由于算法的原因, 这种情况会有副作用, 通过 addJobByAddField 增加的旧字段
    * 会在下次有新变化时, 会重新生成旧字段;
    * 
    * 执行条件:旧字段名存在时
@@ -206,6 +223,9 @@ class DbStructSync {
         case JobType.changeFieldName:
           result = await this.execChangeFieldName(job.jobOption as ChangeFieldNameOption);
           break;
+        case JobType.createIndex:
+          result = await this.execCreateIndex(job.jobOption as CreateIndexOption);
+          break;
         default:
 
       }
@@ -286,7 +306,14 @@ class DbStructSync {
           }
         }
         break;
-
+      case JobType.createIndex:
+        const op = job.jobOption as CreateIndexOption;
+        result = !(await this.isTableExist(op.tableName));
+        if (!result) {
+          result = !(await this.isIndexExist(op.tableName,
+            op.indexName));
+        }
+        break;
 
       default:
 
@@ -358,6 +385,11 @@ class DbStructSync {
           }
         }
         break;
+      case JobType.createIndex:
+        const op = job.jobOption as CreateIndexOption;
+        result = !(await this.isIndexExist(op.tableName,
+          op.indexName));
+        break;
       default:
 
     }
@@ -371,6 +403,14 @@ class DbStructSync {
     const result = await this.db.queryOne(checkSQL);
     this.logger.debug('\nquery SQL:\n', checkSQL, '\nquery result:\n', result);
     return result.isExist;
+  }
+
+  private async isIndexExist(tableName: string, indexName: string): Promise<boolean> {
+    const checkSQL = this.getCheckTableIndexExistSQL(tableName, indexName);
+
+    const result = await this.db.queryOne(checkSQL);
+    this.logger.debug('\nquery SQL:\n', checkSQL, '\nquery result:\n', result);
+    return !!result.isExist;
   }
   private async isTableFieldExistForName(tableName: string, fieldName: string): Promise<boolean> {
     const checkSQL = this.getCheckTableFieldExistForNameSQL(tableName, fieldName);
@@ -450,6 +490,29 @@ class DbStructSync {
     }
     return result;
   }
+
+  private async execCreateIndex(op: CreateIndexOption): Promise<boolean> {
+    this.logger.info('开始创建索引:', op.indexName, ' (', op.tableName, ')');
+    const fieldDefSQLs: string[] = [];
+    const fields = op.fields;
+    const uniqueText = op.isUnique ? 'UNIQUE' : '';
+    if (fields.length > 0) {
+      for (const fieldDefine of fields) {
+        const fieldSql = this.getIndexFieldDefineSQL(fieldDefine);
+        fieldDefSQLs.push(fieldSql);
+      }
+      const fieldsSQL = fieldDefSQLs.join(',');
+      const execSQL =
+        // tslint:disable-next-line:max-line-length
+        `CREATE ${uniqueText} INDEX ${this.db.escapeId(op.indexName)} 
+        ON ${this.db.escapeId(op.tableName)} (${fieldsSQL});`;
+      this.logger.info('\nexec SQL:\n', execSQL);
+      const result = await this.db.query(execSQL);
+      this.logger.debug('\nexec result:\n', result);
+      this.logger.info('索引:', op.indexName, ' (', op.tableName, ')', ' 创建结束.');
+    }
+    return true;
+  }
   private async execCreateTable(op: CreateTableOption): Promise<boolean> {
     this.logger.info('开始创建表:', op.tableName);
     const fieldDefSQLs: string[] = [];
@@ -526,7 +589,6 @@ class DbStructSync {
       ' 旧类型: ', FieldType[op.oldFieldtype],
       '\n', op.newFieldDef);
 
-
     const fieldSql = this.getFieldDefineSQL({
       notAutoDefDefaultValue: true,
       notAutoIncludeNullDef: true,
@@ -592,6 +654,19 @@ class DbStructSync {
     column_name = ${_fieldName} AND 
     data_type = ${_fieldtype}`;
   }
+  private getCheckTableIndexExistSQL(tableName: string,
+    indexName: string): string {
+    const _tableName = this.db.escape(tableName);
+    const _dbName = this.db.escape(this.dbName);
+    const _indexName = this.db.escape(indexName);
+    return `
+    SELECT COUNT(1) as isExist FROM information_schema.STATISTICS 
+    WHERE table_schema=${_dbName} AND 
+    table_name = ${_tableName} AND 
+    index_name = ${_indexName}`;
+
+  }
+
   private getQueryTableFieldSchemaSQL(tableName: string, fieldName: string): string {
     const _tableName = this.db.escape(tableName);
     const _dbName = this.db.escape(this.dbName);
@@ -616,6 +691,16 @@ class DbStructSync {
     column_name = ${_fieldName}`;
   }
 
+  private getIndexFieldDefineSQL(field: IndexFieldDefine): string {
+    let result = '';
+    const isDefLength = (field.length !== undefined && field.length !== null);
+    if (isDefLength) {
+      result = `${this.db.escapeId(field.fieldName)}(${field.length})`;
+    } else {
+      result = `${this.db.escapeId(field.fieldName)}`;
+    }
+    return result;
+  }
   private getFieldDefineSQL(field: FieldDefine): string {
     let result = '';
     let typeText = '';
@@ -794,7 +879,6 @@ END??
 DELIMITER ;
 
 CALL schema_change();
-
 
     SELECT COUNT(1) as isExist FROM information_schema.columns
     WHERE table_schema='apiserver_seed_dev' AND

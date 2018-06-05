@@ -21,6 +21,7 @@
     "clean": "ets clean"
   },
   "dependencies": {
+    "@types/underscore.string": "0.0.32",
     "await-stream-ready": "^1.0.1",
     "bcryptjs": "^2.4.3",
     "captchapng": "0.0.1",
@@ -40,6 +41,7 @@
     "sequelize-decorators": "^1.0.2",
     "stream-to-array": "^2.3.0",
     "stream-wormhole": "^1.0.3",
+    "underscore.string": "^3.3.4",
     "uuid": "^3.2.1"
   },
   "devDependencies": {

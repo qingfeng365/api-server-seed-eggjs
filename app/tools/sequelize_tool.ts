@@ -1,4 +1,6 @@
 
+import * as _ from 'lodash';
+
 /**
  * 使用方式
  * 
@@ -9,8 +11,21 @@
  * 
  */
 class SequelizeTool {
+
   /**
-   * classListToNestingArray
+   * 将 级次表查询列表, 转换成数组嵌套形式 
+   * 
+   * option 默认设置 :
+   * 
+   * option.itemName: 'Children';
+   * option.itemName: 'classCode';
+   * option.itemName: 'level';
+   * option.itemName: 'classParentCode';
+   *
+   * @param {any[]} classlist 
+   * @param {NestingArrayOp} option 级次表字段名设置
+   * @returns 
+   * @memberof SequelizeTool
    */
   public classListToNestingArray(classlist: any[], option: NestingArrayOp) {
     const op = option || {};
@@ -76,18 +91,57 @@ class SequelizeTool {
     });
     return resultArray;
   }
+
+  /**
+   * 将 Sequelize 查询实例或实例数组 转换成 简单对象
+   * 
+   * @param {*} datas Sequelize 查询实例或实例数组
+   * @returns {*} 
+   * @memberof SequelizeTool
+   */
+  public plainData(datas: any): any {
+    let result = datas;
+    if (_.isArray(datas)) {
+      result = [];
+      (datas as any[]).forEach((item) => {
+        if (item.get) {
+          result.push(item.get({ plain: true }));
+        }
+      });
+    } else {
+      if (datas.get) {
+        result = datas.get({ plain: true });
+      }
+    }
+    return result;
+  }
+
+  /**
+   * 将对象属性 转成 {id,name} 对象数组
+   * 
+   * @param {*} obj 
+   * @returns {any[]} 
+   * @memberof SequelizeTool
+   */
+  public objKVToIDNameObjArray(obj: any): any[] {
+    const result = [];
+    Object.keys(obj).forEach((key) => {
+      result.push({ id: key, name: obj[key] });
+    });
+    return result;
+  }
 }
 
 /**
- * 
- * 
+ *
+ *
  * @interface NestingArrayOp
- * 
+ *
  * itemName  嵌套容器属性名
  * codeName  数组元素对象code属性名
  * levelName 数组元素对象level属性名
  * ParentCodeName 数组元素对象parentCode属性名
- * 
+ *
  */
 
 interface NestingArrayOp {

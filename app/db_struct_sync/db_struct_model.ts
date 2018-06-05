@@ -2,8 +2,8 @@
 export interface SyncJob {
   jobType: JobType;
   // jobOption: JobOption;
-  jobOption: CreateTableOption | AddFieldOption | AdjustFieldSizeOption | 
-  AdjustFieldTypeOption | ChangeFieldNameOption;
+  jobOption: CreateTableOption | AddFieldOption | AdjustFieldSizeOption |
+  AdjustFieldTypeOption | ChangeFieldNameOption | CreateIndexOption;
 
 };
 
@@ -13,6 +13,7 @@ export enum JobType {
   adjustFieldSize,
   adjustFieldType,
   changeFieldName,
+  createIndex,
 }
 
 export interface JobOption {
@@ -41,6 +42,38 @@ export interface ChangeFieldNameOption extends JobOption {
   newFieldName: string;
 
 }
+
+export interface CreateIndexOption extends JobOption {
+  /** 索引名建议格式:
+   * index_<字段名1>_<字段名...> ;
+   * index_unique_<字段名1>_<字段名...> ;
+   */
+  indexName: string;
+  /** 是唯一索引 */
+  isUnique?: boolean;
+  /** 索引字段定义列表 */
+  fields: IndexFieldDefine[];
+}
+
+/**
+ * 索引字段属性定义
+ *
+ * @export
+ * @interface IndexFieldDefine
+ */
+export interface IndexFieldDefine {
+  /** 索引字段名 */
+  fieldName: string;
+  /**  创建索引时，使用col_name(length)语法，对前缀编制索引;
+   * 对于CHAR和VARCHAR列，只用一列的一部分就可创建索引 ;
+   * BLOB和TEXT列也可以编制索引，但是必须给出前缀长度 ;
+   * 使用列的一部分创建索引可以使索引文件大大减小，从而节省了大量的磁盘空间，
+   * 有可能提高INSERT操作的速度
+   */
+  length?: number;
+
+}
+
 /**
  * 字段属性定义
  * 
@@ -50,30 +83,30 @@ export interface ChangeFieldNameOption extends JobOption {
 export interface FieldDefine {
   /**
    * 字段名
-   * 
+   *
    * @type {string}
    * @memberof FieldDefine
    */
   name?: string;
   type?: FieldType;
   /**
-   * 字符字段大小, 默认 255 ; 
+   * 字符字段大小, 默认 255 ;
    * DECIMAL 字段精度,默认 15
-   * 
+   *
    * @type {number}
    * @memberof FieldDefine
    */
   length?: number;
   /**
    * DECIMAL 字段小数位数,默认 2
-   * 
+   *
    * @type {number}
    * @memberof FieldDefine
    */
   decimals?: number;
   /**
    * 不为空
-   * 
+   *
    * @type {boolean}
    * @memberof FieldDefine
    */
@@ -81,7 +114,7 @@ export interface FieldDefine {
   defaultValue?: string;
   /**
    * 字段注释
-   * 
+   *
    * @type {string}
    * @memberof FieldDefine
    */
@@ -101,7 +134,6 @@ export interface FieldDefine {
    */
   notAutoIncludeNullDef?: boolean;
 }
-
 
 export enum FieldType {
   CHAR,

@@ -84,4 +84,19 @@ export function buildSyncJobs() {
     addressrecevings.fields,
     addressrecevings.tableComment
   );
+
+  dbStructSync.addJobByCreateIndex('sync_demo_table1',
+    'index_VARCHAR', [{
+      fieldName: 'VARCHAR',
+    }]);
+
+  dbStructSync.addJobByCreateIndex('sync_demo_table1',
+    'index_VARCHAR', [{
+      fieldName: 'VARCHAR',
+    }]);
+
+  dbStructSync.addJobByCreateIndex('sync_demo_table1',
+    'index_unique_CHAR', [{
+      fieldName: 'CHAR',
+    }], true);
 }
