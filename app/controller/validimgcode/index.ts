@@ -10,7 +10,7 @@ export default class IndexController extends Controller {
       id: "string"
     };
 
-    this.ctx.validate(paramRule);
+    ctx.validate(paramRule);
     // const errors = (this.app as any).validator.validate(paramRule, ctx.query);
 
     const cacheId = ctx.query.id;

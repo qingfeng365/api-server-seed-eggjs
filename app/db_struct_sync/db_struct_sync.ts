@@ -63,6 +63,20 @@ class DbStructSync {
     this.addJob(job);
   }
 
+  /**
+   * 创建索引, 索引名格式建议:
+   * index_<字段名1>_<字段名...> ;
+   * index_unique_<字段名1>_<字段名...> ;
+   * 
+   * 注意:唯一约束索引 对 null 是无效的, 即 null 不视为重复; 
+   * 因此要使用 唯一约束索引的字段, 要不为 null, 或有缺省值.
+   * 
+   * @param {string} tableName 表名
+   * @param {string} indexName 索引名
+   * @param {IndexFieldDefine[]} indexFields 索引字段定义列表
+   * @param {boolean} [isUnique=false] 是唯一约束索引
+   * @memberof DbStructSync
+   */
   public addJobByCreateIndex(
     tableName: string,
     indexName: string,
