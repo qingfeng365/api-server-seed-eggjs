@@ -18,6 +18,34 @@ export default (app: Application) => {
       }
     }
 
+    (app as any).validator.addRule('jsonString', (rule, value) => {
+      try {
+        JSON.parse(value);
+      } catch (err) {
+        return 'must be json string';
+      }
+    });
+    (app as any).validator.addRule('queryBoolean', /^(1|0|false|true)$/i);
+    (app as any).validator.addRule('queryInt', (rule, value) => {
+      try {
+        const isInt = /-?[1-9]\d*/.test(value);
+        if (isInt) {
+          const intValue = parseInt(value, 10);
+          if (rule.hasOwnProperty('max') && intValue > rule.max) {
+            return `length should smaller than ${rule.max}`;
+          }
+          if (rule.hasOwnProperty('min') && intValue < rule.min) {
+            return `should bigger than ${rule.min}`;
+          }
+
+        } else {
+          return 'must be integer';
+        }
+      } catch (error) {
+        return 'must be integer';
+      }
+    });
+
     // 取消 ,因 egg-sequelize 会自动调用 associate 
     // if (sequelize) {
 
