@@ -1,4 +1,11 @@
-
+/**
+ * 转换到 boolean 类型
+ *
+ * @export
+ * @param {*} value
+ * @param {boolean} [allowUndefined=false] 可选,值是undefined 时, 返回 undefined
+ * @returns {boolean}
+ */
 export function toBoolean(
   value: any,
   allowUndefined = false,
