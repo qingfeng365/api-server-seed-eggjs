@@ -1,9 +1,9 @@
 import { Controller } from 'egg';
 import captchapng = require('captchapng');
-import { RedisCatchGroup, RedisCatchTool } from '../../tools/redis_catch_tool';
+import { RedisCacheGroup, RedisCacheTool } from '../../tools/redis_cache_tool';
 export default class IndexController extends Controller {
-  catchGroup: RedisCatchGroup = ((this.app as any)
-    .redisCatchTool as RedisCatchTool).createGroup('ValidImgCode');
+  cacheGroup: RedisCacheGroup = ((this.app as any)
+    .redisCacheTool as RedisCacheTool).createGroup('ValidImgCode');
   public async getValidImg() {
     const { ctx } = this;
     const paramRule = {
@@ -18,7 +18,7 @@ export default class IndexController extends Controller {
 
     const validValue = parseInt(Math.random() * 9000 + 1000 + '', 10);
 
-    await this.catchGroup.set(cacheId, validValue, 1000 * 60 * 30);
+    await this.cacheGroup.set(cacheId, validValue, 1000 * 60 * 30);
 
     ctx.logger.info(`getValidImg validValue: ${cacheId}:${validValue}`);
 
@@ -47,7 +47,7 @@ export default class IndexController extends Controller {
 
     ctx.logger.info(`checkValidImgCode cacheId: ${cacheId}, code:${code}`);
 
-    const checkcode = await this.catchGroup.get(cacheId);
+    const checkcode = await this.cacheGroup.get(cacheId);
 
     if (checkcode) {
       if (String(checkcode) === String(code)) {

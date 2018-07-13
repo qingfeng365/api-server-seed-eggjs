@@ -1,16 +1,16 @@
 import { Application } from 'egg';
-import { RedisCatchTool } from '../tools/redis_catch_tool';
+import { RedisCacheTool } from '../tools/redis_cache_tool';
 import { SequelizeTool } from '../tools/sequelize_tool';
 // tslint:disable-next-line:variable-name
-const RedisCatchToolSymbol = Symbol('Application#RedisCatchTool');
+const RedisCacheToolSymbol = Symbol('Application#RedisCacheTool');
 const sequelizeToolSymbol = Symbol('Application#sequelizeTool');
 module.exports = {
-  get redisCatchTool(): RedisCatchTool {
+  get redisCacheTool(): RedisCacheTool {
     const app: Application = this;
-    if (!this[RedisCatchToolSymbol]) {
-      this[RedisCatchToolSymbol] = new RedisCatchTool(app);
+    if (!this[RedisCacheToolSymbol]) {
+      this[RedisCacheToolSymbol] = new RedisCacheTool(app);
     }
-    return this[RedisCatchToolSymbol];
+    return this[RedisCacheToolSymbol];
   },
 
   get sequelizeTool(): SequelizeTool {
