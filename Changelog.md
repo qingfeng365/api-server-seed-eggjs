@@ -1,5 +1,10 @@
 # Changelog 更新日志
 
+### 2018-07-13
+
+- 缓存工具命名改为 RedisCacheTool, 原名拼错单词
+- RedisCacheGroup set get 增加 对 json 对象的支持
+
 ### 2018-06-12
 
 - validator 增加 queryBoolean queryInt 验证规则 
