@@ -17,7 +17,7 @@ export default class ResourceController extends Controller {
 
     const target = path.join(process.cwd(), resouceDir, newuuid + path.extname(stream.filename));
 
-    ctx.logger.info('upload:', '\n源:', stream.filename, '\n目标:',  target);
+    ctx.logger.info('upload:', '\n源:', stream.filename, '\n目标:', target);
     const writeStream = fs.createWriteStream(target);
     const awaitWriteStream = awaitStream.write;
     try {
