@@ -28,7 +28,7 @@ export default (app: Application) => {
     (app as any).validator.addRule('queryBoolean', /^(1|0|false|true)$/i);
     (app as any).validator.addRule('queryInt', (rule, value) => {
       try {
-        const isInt = /-?[1-9]\d*/.test(value);
+        const isInt = /-?[0-9]\d*/.test(value);
         if (isInt) {
           const intValue = parseInt(value, 10);
           if (rule.hasOwnProperty('max') && intValue > rule.max) {
